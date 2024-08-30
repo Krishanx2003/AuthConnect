@@ -1,13 +1,11 @@
-import NextAuth from "next-auth";
-import { Account, User as AuthUser } from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import User from "@/models/User";
-import connect from "../../../../utils/mongodb"
+import connect from "../../../../utils/mongodb";
 
-export const authOptions: any = {
-  // Configure one or more authentication providers
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       id: "credentials",
@@ -41,11 +39,11 @@ export const authOptions: any = {
     // ...add more providers here
   ],
   callbacks: {
-    async signIn({ user, account }: { user: AuthUser; account: Account }) {
-      if (account?.provider == "credentials") {
+    async signIn({ user, account }: { user: any; account: any }) {
+      if (account?.provider === "credentials") {
         return true;
       }
-      if (account?.provider == "github") {
+      if (account?.provider === "github") {
         await connect();
         try {
           const existingUser = await User.findOne({ email: user.email });
@@ -63,9 +61,10 @@ export const authOptions: any = {
           return false;
         }
       }
+      return false;
     },
   },
 };
 
-export const handler = NextAuth(authOptions);
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
